@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Services.BackgroundServices;
+using Azure;
 using Domain.Entitys.MealModel;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,12 +41,12 @@ public class MealController : ControllerBase
     }
 
     // GET api/dailymeals/get-monthly-meal-by-employeeId/{employeeId}/month/{year}-{month}
-    [HttpGet("get-monthly-meal-by-employee/{employeeId}/month/{year}-{month}")]
-    public async Task<ActionResult<IReadOnlyList<DailyMeal>>> GetEmployeeMonthlyMeals(int employeeId, int year, int month)
+    [HttpGet("get-monthly-meal-by-employee/{userId}/{year}/{month}")]
+    public async Task<ActionResult<IReadOnlyList<DailyMeal>>> GetEmployeeMonthlyMeals(int userId, int year, int month)
     {
         try
         {
-            var meals = await _mealService.MealForMonthByEmployeeAsync(employeeId, year, month);
+            var meals = await _mealService.MealForMonthByEmployeeAsync(userId, year, month);
             return Ok(meals.ToList());
         }
         catch (Exception ex)
@@ -114,4 +115,47 @@ public class MealController : ControllerBase
         await _generator.GenerateMonthlyMealsAsync(year, month);
         return Ok($"Meals generated for {month}/{year}");
     }
+
+    [HttpGet("updateDailyMealByProperty/{id}/{propertyName}/{value}")]
+    public async Task<IActionResult> UpdateDailyMealByProperty(int id,string propertyName, double value)
+    {
+        try
+        {
+            var result = await _mealService.UpdateDailyMealByProperty(id, propertyName, value);
+            return Ok(new ApiResponse<bool>(result, success: result, message: "Update Successfully"));
+        }
+        catch (Exception)
+        {
+            return Ok(new ApiResponse<bool>(success: false, message: "Not Meal Updated"));
+        }
+    }
+
+    [HttpGet("UpdateMonthlyMealByProperty/{empId}/{month}/{year}/{propertyName}/{value}")]
+    public async Task<IActionResult> UpdateMonthlyMealByProperty(int empId,int month,int year, string propertyName, double value)
+    {
+        try
+        {
+            var result = await _mealService.UpdateMonthlyMealByProperty(empId,month,year, propertyName, value);
+            return Ok(new ApiResponse<bool>(result, success: result, message: "Update Successfully"));
+        }
+        catch (Exception)
+        {
+            return Ok(new ApiResponse<bool>(success: false, message: "Not Meal Updated"));
+        }
+    }
+
+    [HttpGet("setOffDayMeals/{dayOff}/{month}/{year}/{empId}")]
+    public async Task<IActionResult> SetOffDayMeals(string dayOff, int month, int year, int empId)
+    {
+        try
+        {
+            var result = await _mealService.SetOffDayMealsAsync(dayOff, month, year, empId);
+            return Ok(new ApiResponse<bool>(result, success: result, message: "Update Successfully"));
+        }
+        catch (Exception)
+        {
+            return Ok(new ApiResponse<bool>(success: false, message: "Not Meal Updated"));
+        }
+    }
+
 }

@@ -32,7 +32,7 @@ namespace Application.Services
 
         public async Task UpdateAsync(Role role)
         {
-            _roleRepository.Update(role);
+           await _roleRepository.UpdateAsync(role);
         }
 
         public async Task DeleteAsync(int id)
@@ -40,7 +40,7 @@ namespace Application.Services
             var role = await _roleRepository.GetByIdAsync(id);
             if (role != null)
             {
-                _roleRepository.Delete(role);
+               await _roleRepository.DeleteAsync(role);
             }
         }
     }

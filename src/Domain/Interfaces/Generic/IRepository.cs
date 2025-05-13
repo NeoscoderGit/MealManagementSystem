@@ -11,8 +11,8 @@ namespace Domain.Interfaces.Generic
         Task<List<T>> GetAllIncludingAsync(params Expression<Func<T, object>>[] includes);
         Task AddAsync(T entity);
         Task AddRangeAsync(IEnumerable<T> entities);
-        void Update(T entity);
-        void Delete(T entity);
-        void DeleteRange(IEnumerable<T> entities);
+        Task UpdateAsync(T entity);
+        Task DeleteAsync(T entity);
+        Task DeleteRangeAsync(IEnumerable<T> entities);
     }
 }

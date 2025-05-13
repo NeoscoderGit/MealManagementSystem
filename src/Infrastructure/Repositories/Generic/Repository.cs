@@ -61,19 +61,19 @@ namespace Infrastructure.Repositories.Generic
             await _context.SaveChangesAsync();
         }
 
-        public async void Update(T entity)
+        public async Task UpdateAsync(T entity)
         {
             _entities.Update(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(T entity)
+        public async Task DeleteAsync(T entity)
         {
             _entities.Remove(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async void DeleteRange(IEnumerable<T> entities)
+        public async Task DeleteRangeAsync(IEnumerable<T> entities)
         {
             _entities.RemoveRange(entities);
             await _context.SaveChangesAsync();

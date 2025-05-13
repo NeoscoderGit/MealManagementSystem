@@ -12,5 +12,8 @@ namespace Application.Interfaces
         Task<IReadOnlyList<DailyMeal>> MealForMonthAsync(int year, int month);
         Task<IReadOnlyList<DailyMeal>> MealForDayAsync(int year, int month, int day);
         Task<MealCheckResultViewModel?> AutoDetectAndCheckMealAsync(string cardNumber, DateTime requestDateTime);
+        Task<bool> UpdateDailyMealByProperty(int id, string propertyName, double value);
+        Task<bool> UpdateMonthlyMealByProperty(int empId, int month, int year, string propertyName, double value);
+        Task<bool> SetOffDayMealsAsync(string weekend, int month, int year, int employeeId);
     }
 }

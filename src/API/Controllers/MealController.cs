@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Services.BackgroundServices;
+using Azure;
 using Domain.Entitys.MealModel;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,16 +20,9 @@ public class MealController : ControllerBase
         _updaterService = updaterService;
     }
 
-    [HttpPost("generate/{year}/{month}")]
-    public async Task<IActionResult> GenerateMeals(int year, int month)
-    {
-        await _generator.GenerateMonthlyMealsAsync(year, month);
-        return Ok($"Meals generated for {month}/{year}");
-    }
-
-    [HttpGet("employee/{employeeId}/date/{year}-{month}-{day}")]
-    public async Task<ActionResult<DailyMeal>> GetEmployeeDailyMeal(
-        int employeeId, int year, int month, int day)
+    // GET api/dailymeals/get-monthly-meal-by-employeeId/{employeeId}/month/{year}-{month}-{day}
+    [HttpGet("get-daily-meal-by-employeeId/{employeeId}/date/{year}-{month}-{day}")]
+    public async Task<ActionResult<DailyMeal>> GetEmployeeDailyMeal(int employeeId, int year, int month, int day)
     {
         try
         {
@@ -46,14 +40,13 @@ public class MealController : ControllerBase
         }
     }
 
-    // GET api/dailymeals/employee/{employeeId}/month/{year}-{month}
-    [HttpGet("employee/{employeeId}/month/{year}-{month}")]
-    public async Task<ActionResult<IReadOnlyList<DailyMeal>>> GetEmployeeMonthlyMeals(
-        int employeeId, int year, int month)
+    // GET api/dailymeals/get-monthly-meal-by-employeeId/{employeeId}/month/{year}-{month}
+    [HttpGet("get-monthly-meal-by-employee/{userId}/{year}/{month}")]
+    public async Task<ActionResult<IReadOnlyList<DailyMeal>>> GetEmployeeMonthlyMeals(int userId, int year, int month)
     {
         try
         {
-            var meals = await _mealService.MealForMonthByEmployeeAsync(employeeId, year, month);
+            var meals = await _mealService.MealForMonthByEmployeeAsync(userId, year, month);
             return Ok(meals.ToList());
         }
         catch (Exception ex)
@@ -63,10 +56,9 @@ public class MealController : ControllerBase
         }
     }
 
-    // GET api/dailymeals/date/{year}-{month}-{day}
-    [HttpGet("date/{year}-{month}-{day}")]
-    public async Task<ActionResult<IReadOnlyList<DailyMealDto>>> GetDailyMealsForAllEmployees(
-        int year, int month, int day)
+    // GET api/dailymeals/get-daily-meal/{year}-{month}-{day}
+    [HttpGet("get-daily-meal/{year}-{month}-{day}")]
+    public async Task<ActionResult<IReadOnlyList<DailyMealDto>>> GetDailyMealsForAllEmployees(int year, int month, int day)
     {
         try
         {
@@ -80,10 +72,9 @@ public class MealController : ControllerBase
         }
     }
 
-    // GET api/dailymeals/month/{year}-{month}
-    [HttpGet("month/{year}-{month}")]
-    public async Task<ActionResult<IReadOnlyList<DailyMeal>>> GetMonthlyMealsForAllEmployees(
-        int year, int month)
+    // GET api/dailymeals/get-monthly-meal/{year}-{month}
+    [HttpGet("get-monthly-meal/{year}-{month}")]
+    public async Task<ActionResult<IReadOnlyList<DailyMeal>>> GetMonthlyMealsForAllEmployees(int year, int month)
     {
         try
         {
@@ -96,7 +87,7 @@ public class MealController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
-    [HttpGet("check/{cardNumber}")]
+    [HttpGet("checkMeal/{cardNumber}")]
     public async Task<IActionResult> CheckMeal(string cardNumber)
     {
         if (string.IsNullOrWhiteSpace(cardNumber))
@@ -111,10 +102,60 @@ public class MealController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("trigger")]
-    public IActionResult TriggerUpdate()
+    [HttpPost("closeMealRequest")]
+    public async Task<IActionResult> CloseMealRequest()
     {
-        _updaterService.RequestManualTrigger();
+        await _updaterService.RequestManualTrigger();
         return Ok("Meal status update triggered");
     }
+
+    [HttpPost("generateMonthlyMeal/{year}/{month}")]
+    public async Task<IActionResult> GenerateMeals(int year, int month)
+    {
+        await _generator.GenerateMonthlyMealsAsync(year, month);
+        return Ok($"Meals generated for {month}/{year}");
+    }
+
+    [HttpGet("updateDailyMealByProperty/{id}/{propertyName}/{value}")]
+    public async Task<IActionResult> UpdateDailyMealByProperty(int id,string propertyName, double value)
+    {
+        try
+        {
+            var result = await _mealService.UpdateDailyMealByProperty(id, propertyName, value);
+            return Ok(new ApiResponse<bool>(result, success: result, message: "Update Successfully"));
+        }
+        catch (Exception)
+        {
+            return Ok(new ApiResponse<bool>(success: false, message: "Not Meal Updated"));
+        }
+    }
+
+    [HttpGet("UpdateMonthlyMealByProperty/{empId}/{month}/{year}/{propertyName}/{value}")]
+    public async Task<IActionResult> UpdateMonthlyMealByProperty(int empId,int month,int year, string propertyName, double value)
+    {
+        try
+        {
+            var result = await _mealService.UpdateMonthlyMealByProperty(empId,month,year, propertyName, value);
+            return Ok(new ApiResponse<bool>(result, success: result, message: "Update Successfully"));
+        }
+        catch (Exception)
+        {
+            return Ok(new ApiResponse<bool>(success: false, message: "Not Meal Updated"));
+        }
+    }
+
+    [HttpGet("setOffDayMeals/{dayOff}/{month}/{year}/{empId}")]
+    public async Task<IActionResult> SetOffDayMeals(string dayOff, int month, int year, int empId)
+    {
+        try
+        {
+            var result = await _mealService.SetOffDayMealsAsync(dayOff, month, year, empId);
+            return Ok(new ApiResponse<bool>(result, success: result, message: "Update Successfully"));
+        }
+        catch (Exception)
+        {
+            return Ok(new ApiResponse<bool>(success: false, message: "Not Meal Updated"));
+        }
+    }
+
 }

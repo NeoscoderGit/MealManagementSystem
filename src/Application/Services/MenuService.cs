@@ -31,7 +31,7 @@ namespace Application.Services
 
         public async Task UpdateAsync(Menu menu)
         {
-            _menuRepository.Update(menu);
+           await _menuRepository.UpdateAsync(menu);
         }
 
         public async Task DeleteAsync(int id)
@@ -39,7 +39,7 @@ namespace Application.Services
             var menu = await _menuRepository.GetByIdAsync(id);
             if (menu != null)
             {
-                _menuRepository.Delete(menu);
+               await _menuRepository.DeleteAsync(menu);
             }
         }
     }

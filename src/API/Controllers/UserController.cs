@@ -35,6 +35,24 @@ namespace YourNamespace.API.Controllers
             };
             return Ok(result);
         }
+        [HttpGet("getallUser")]
+        public async Task<IActionResult> GetallUser()
+        {
+            var users = await _userService.GetAllAsync();
+            if (users == null || !users.Any()) return NotFound();
+
+            var result = users.Select(user => new UserDto
+            {
+                Id = user.Id,
+                EmployeeId = user.EmployeeId,
+                EmployeeName = user.EmployeeName,
+                EmployeeCode = user.EmployeeCode,
+                OfficeEmail = user.OfficeEmail,
+                ContactNo = user.ContactNo,
+            }).ToList();
+
+            return Ok(result);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateUserDto dto)

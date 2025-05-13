@@ -32,7 +32,7 @@ namespace Application.Services
 
         public async Task UpdateUserAsync(User user)
         {
-            _userRepository.Update(user);
+           await _userRepository.UpdateAsync(user);
         }
 
         public async Task DeleteUserAsync(int id)
@@ -40,7 +40,7 @@ namespace Application.Services
             var user = await _userRepository.GetByIdAsync(id);
             if (user != null)
             {
-                _userRepository.Delete(user);
+               await _userRepository.DeleteAsync(user);
             }
         }
 

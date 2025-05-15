@@ -13,6 +13,7 @@ namespace Application
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuService, MenuService>();
             services.AddScoped<IMealService, MealService>();
+            services.AddScoped<IEmployeeMealConfiguration, EmployeeMealConfiguration>();
             services.AddScoped<IMealGeneratorService, MealGeneratorService>();
             services.AddHostedService<MonthlyMealWorkerService>();
             services.AddSingleton<MealStatusUpdaterService>();

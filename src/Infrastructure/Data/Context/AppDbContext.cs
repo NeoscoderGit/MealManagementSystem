@@ -1,5 +1,4 @@
-﻿
-using Domain.Entitys.AuthModel;
+﻿using Domain.Entitys.AuthModel;
 using Domain.Entitys.Common;
 using Domain.Entitys.MealModel;
 using Infrastructure.Data.AuthConfiguration;
@@ -26,6 +25,7 @@ namespace Infrastructure.Data.Context
 
 
             modelBuilder.ApplyConfiguration(new DailyMealConfiguration());
+            modelBuilder.ApplyConfiguration(new EmployeeMealDayConfiguration());
 
             AuthDataSeed.Seed(modelBuilder);
             MealDataSeed.Seed(modelBuilder);
@@ -69,5 +69,6 @@ namespace Infrastructure.Data.Context
         //Meal
         public DbSet<MealTime> MealTimes { get; set; }
         public DbSet<DailyMeal> DailyMeals { get; set; }
+        public DbSet<EmployeeMealDay> EmployeeMealDays { get; set; }
     }
 }

@@ -43,7 +43,6 @@ namespace Application.Services
                await _userRepository.DeleteAsync(user);
             }
         }
-
         public async Task<User> GetByIdWithRoalAsync(int id)
         {
             return  await _userRepository.GetByIdAsync(

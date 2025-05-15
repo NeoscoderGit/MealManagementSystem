@@ -90,18 +90,59 @@ namespace Infrastructure.Repositories.Meal
 
             foreach (var employeeId in employeeIds)
             {
+                var employee = _context.EmployeeMealDays
+                .AsNoTracking()
+                .FirstOrDefault(e => e.UserId == employeeId);
+                var dayList=GetMealDayList(employee,employeeId, month,year);
                 for (int day = 1; day <= daysInMonth; day++)
                 {
                     if (existingMeals.Any(m => m.EmployeeId == employeeId && m.Day == day))
                         continue;
-
-                    newMeals.Add(new DailyMeal
+                    if (!dayList.Contains(day))
                     {
-                        EmployeeId = employeeId,
-                        Year = year,
-                        Month = month,
-                        Day = day
-                    });
+                        newMeals.Add(new DailyMeal
+                        {
+                            EmployeeId = employeeId,
+                            Year = year,
+                            Month = month,
+                            Day = day,
+                            Breakfast = 0,
+                            BreakfastGuest = 0,
+                            Lunch = 0,
+                            LunchGuest = 0,
+                            Dinner = 0,
+                            DinnerGuest = 0,
+                            IsBreakfastComplete = false,
+                            IsLunchComplete = false,
+                            IsDinnerComplete = false,
+                            IsBreakfastTaken = false,
+                            IsLunchTaken = false,
+                            IsDinnerTaken = false,
+                            IsWeekend = true
+                        });
+                    }
+                    else
+                    {
+                        newMeals.Add(new DailyMeal
+                        {
+                            EmployeeId = employeeId,
+                            Year = year,
+                            Month = month,
+                            Day = day,
+                            Breakfast = employee?.Breakfast ?? 0,
+                            BreakfastGuest = employee?.BreakfastGuest ?? 0,
+                            Lunch = employee?.Lunch ?? 0,
+                            LunchGuest = employee?.LunchGuest ?? 0,
+                            Dinner = employee?.Dinner ?? 0,
+                            DinnerGuest = employee?.DinnerGuest ?? 0,
+                            IsBreakfastComplete = false,
+                            IsLunchComplete = false,
+                            IsDinnerComplete = false,
+                            IsBreakfastTaken = false,
+                            IsLunchTaken = false,
+                            IsDinnerTaken = false
+                        });
+                    }
                 }
             }
 
@@ -110,6 +151,79 @@ namespace Infrastructure.Repositories.Meal
                 await AddRangeAsync(newMeals);// Using inherited method
             }
         }
+
+        static List<int> GetMealDayList(EmployeeMealDay? employee,int userId ,int month,int year)
+        {
+           List<string> strings = new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sunday","Saturday" };
+            
+            if (employee != null)
+            {
+                if (!(bool)employee.IsSundayMeal)
+                {
+                    strings.Remove("Sunday");
+                }
+                if (!(bool)employee.IsMondayMeal)
+                {
+                    strings.Remove("Monday");
+                }
+                if (!(bool)employee.IsTuesdayMeal)
+                {
+                    strings.Remove("Tuesday");
+                }
+                if (!(bool)employee.IsWednesdayMeal)
+                {
+                    strings.Remove("Wednesday");
+                }
+                if (!(bool)employee.IsThursdayMeal)
+                {
+                    strings.Remove("Thursday");
+                }
+                if (!(bool)employee.IsFridaydayMeal)
+                {
+                    strings.Remove("Friday");
+                }
+                if (!(bool)employee.IsSaturdayMeal)
+                {
+                    strings.Remove("Saturday");
+                }
+            }
+            var mealDays = GetMealDays(strings, month, year);
+            return mealDays;
+        }
+        static List<int> GetMealDays(List<string> dayNames, int month, int year)
+        {
+            if (dayNames == null || dayNames.Count == 0)
+                throw new ArgumentException("dayNames list cannot be null or empty");
+
+            var validDaysOfWeek = new HashSet<DayOfWeek>();
+
+            foreach (var name in dayNames)
+            {
+                if (Enum.TryParse(typeof(DayOfWeek), name, true, out var dayOfWeekObj))
+                {
+                    validDaysOfWeek.Add((DayOfWeek)dayOfWeekObj);
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid day name: {name}");
+                }
+            }
+
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+            var dayNumbers = new List<int>();
+
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                var date = new DateTime(year, month, day);
+                if (validDaysOfWeek.Contains(date.DayOfWeek))
+                {
+                    dayNumbers.Add(day);
+                }
+            }
+
+            return dayNumbers;
+        }
+
 
         public async Task<MealCheckResultViewModel> AutoDetectAndCheckMealAsync(string cardNumber, DateTime requestDateTime)
         {

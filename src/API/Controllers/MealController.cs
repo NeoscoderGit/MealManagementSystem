@@ -12,12 +12,14 @@ public class MealController : ControllerBase
     private readonly IMealGeneratorService _generator;
     private readonly MealStatusUpdaterService _updaterService;
     private readonly IMealService _mealService;
+    private readonly IEmployeeMealConfiguration _employeeMealConfiguration;
 
-    public MealController(IMealGeneratorService generator, IMealService mealService,MealStatusUpdaterService updaterService)
+    public MealController(IMealGeneratorService generator, IMealService mealService, IEmployeeMealConfiguration employeeMealConfiguration, MealStatusUpdaterService updaterService)
     {
         _generator = generator;
         _mealService = mealService;
         _updaterService = updaterService;
+        _employeeMealConfiguration = employeeMealConfiguration;
     }
 
     // GET api/dailymeals/get-monthly-meal-by-employeeId/{employeeId}/month/{year}-{month}-{day}
@@ -58,7 +60,7 @@ public class MealController : ControllerBase
 
     // GET api/dailymeals/get-daily-meal/{year}-{month}-{day}
     [HttpGet("get-daily-meal/{year}-{month}-{day}")]
-    public async Task<ActionResult<IReadOnlyList<DailyMealDto>>> GetDailyMealsForAllEmployees(int year, int month, int day)
+    public async Task<ActionResult<IReadOnlyList<DailyMeal>>> GetDailyMealsForAllEmployees(int year, int month, int day)
     {
         try
         {
@@ -155,6 +157,34 @@ public class MealController : ControllerBase
         catch (Exception)
         {
             return Ok(new ApiResponse<bool>(success: false, message: "Not Meal Updated"));
+        }
+    }
+    [HttpGet("getAllEmployeeConfiguration")]
+    public async Task<IActionResult> GetAllEmployeeConfiguration()
+    {
+        try
+        {
+            var result = await _employeeMealConfiguration.GetAllAsync();
+            return Ok(new ApiResponse<List<EmployeeMealDayDto>>(result, success: true, message: "Get All Successfully"));
+        }
+        catch (Exception)
+        {   
+            return Ok(new ApiResponse<List<EmployeeMealDayDto>>(data:null,success: false, message: "Not Meal Updated"));
+        }
+    }
+
+    [HttpPost("addEmployeeMealConfiguration")]
+    public async Task<IActionResult> AddEmployeeMealConfiguration([FromBody] EmployeeMealDayDto mealDay)
+    {
+        try
+        {
+            var mealSetup=await _employeeMealConfiguration.CreateAsync(mealDay);
+            return Ok(mealSetup);
+        }
+        catch (Exception)
+        {
+
+            throw;
         }
     }
 
